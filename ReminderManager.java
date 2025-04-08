@@ -66,4 +66,7 @@ public class ReminderManager {
     public User getUser() {
         return user;
     }
+    public ReminderSchedule getSchedule() {
+        return schedule;
+    }
 }
