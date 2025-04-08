@@ -4,6 +4,7 @@ import models.Medication;
 import models.User;
 import exceptions.InvalidDosageException;
 import exceptions.InvalidTimeFormatException;
+import utils.FileHandler;
 
 import java.util.Scanner;
 
@@ -17,9 +18,11 @@ import java.util.Scanner;
 public class ReminderApp {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String medFilePath = "medications.txt";
+
+        System.out.println("Welcome to AminMedicationManager!");
 
         // Step 1: Create a user
-        System.out.println("Welcome to AminMedicationManager!");
         System.out.print("Enter your name: ");
         String name = scanner.nextLine();
         System.out.print("Enter your age: ");
@@ -30,8 +33,15 @@ public class ReminderApp {
         User user = new User(name, age, gender);
         ReminderManager manager = new ReminderManager(user);
 
-        // Step 2: Add medications
-        System.out.print("How many medications do you want to add? ");
+        // Step 2: Load medications from file?
+        System.out.print("Do you want to load medications from a file? (yes/no): ");
+        String loadChoice = scanner.nextLine();
+        if (loadChoice.equalsIgnoreCase("yes")) {
+            FileHandler.loadMedicationsFromFile(user, medFilePath);
+        }
+
+        // Step 3: Add new medications
+        System.out.print("How many new medications do you want to add? ");
         int count = Integer.parseInt(scanner.nextLine());
 
         for (int i = 0; i < count; i++) {
@@ -50,17 +60,33 @@ public class ReminderApp {
                 manager.addMedication(med);
             } catch (InvalidDosageException | InvalidTimeFormatException e) {
                 System.out.println("Error: " + e.getMessage());
-                i--; // retry this medication
+                i--; // retry current med
             }
         }
 
-        // Step 3: Choose schedule type
+        // Step 4: Set schedule type
         System.out.print("\nChoose reminder schedule (daily/weekly): ");
         String scheduleMode = scanner.nextLine();
         manager.setScheduleMode(scheduleMode);
 
-        // Step 4: Print reminders
+        // Step 5: Print reminders
         manager.printReminders();
+
+        // Step 6: Save medications
+        System.out.print("\nDo you want to save medications to a file? (yes/no): ");
+        String saveChoice = scanner.nextLine();
+        if (saveChoice.equalsIgnoreCase("yes")) {
+            FileHandler.saveMedicationsToFile(user, medFilePath);
+        }
+
+        // Step 7: Save reminders
+        System.out.print("\nDo you want to save these reminders to a file? (yes/no): ");
+        String reminderSaveChoice = scanner.nextLine();
+        if (reminderSaveChoice.equalsIgnoreCase("yes")) {
+            System.out.print("Enter file name (e.g., reminders.txt): ");
+            String reminderFile = scanner.nextLine();
+            FileHandler.saveRemindersToFile(manager.getSchedule().getReminders(), reminderFile);
+        }
 
         scanner.close();
     }
